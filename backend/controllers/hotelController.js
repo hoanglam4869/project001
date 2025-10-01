@@ -1,4 +1,5 @@
 const Hotel = require("../models/Hotel");
+const User = require("../models/User");
 
 // Admin tạo khách sạn
 exports.createHotel = async (req, res) => {
@@ -49,9 +50,18 @@ exports.deleteHotel = async (req, res) => {
     const hotel = await Hotel.findByPk(id);
     if (!hotel) return res.status(404).json({ msg: "Hotel not found" });
 
+    // ✅ B1: set NULL cho tất cả user thuộc khách sạn này
+    await User.update(
+      { hotel_id: null },
+      { where: { hotel_id: id } }
+    );
+
+    // ✅ B2: xóa khách sạn
     await hotel.destroy();
-    res.json({ msg: "Hotel deleted" });
+
+    res.json({ msg: "Hotel deleted, all staff/manager unlinked from hotel" });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ msg: "Server error" });
   }
 };

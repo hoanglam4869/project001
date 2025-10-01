@@ -34,10 +34,12 @@ const User = sequelize.define("User", {
   timestamps: false,
 });
 
-// 🔐 Hash password trước khi lưu
-User.beforeCreate(async (user) => {
-  const salt = await bcrypt.genSalt(10);
-  user.password = await bcrypt.hash(user.password, salt);
+// 🔐 Hash password trước khi lưu (create hoặc update)
+User.beforeSave(async (user, options) => {
+  if (user.changed('password')) {
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(user.password, salt);
+  }
 });
 
 module.exports = User;

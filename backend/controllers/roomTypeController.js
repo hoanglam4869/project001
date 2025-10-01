@@ -1,65 +1,92 @@
 const RoomType = require("../models/RoomType");
-const Room = require("../models/Room");
-const Hotel = require("../models/Hotel");
 
-// Create RoomType (manager only, hotel họ quản lý)
+// Tạo RoomType
 exports.createRoomType = async (req, res) => {
   try {
-    const { name, description, basic_price } = req.body;
+    const { hotel_id, name, description, furniture, price, capacity } = req.body;
 
-    // lấy hotel_id từ user
-    const hotel_id = req.user.hotel_id;
-    if (!hotel_id) return res.status(403).json({ msg: "You don't manage any hotel" });
+    if (req.user.role !== "manager" || req.user.hotel_id !== hotel_id) {
+      return res.status(403).json({ msg: "You can only create room type for your hotel" });
+    }
 
-    const roomType = await RoomType.create({ name, description, basic_price, hotel_id });
-    res.json({ msg: "RoomType created", roomType });
+    const roomType = await RoomType.create({
+      hotel_id,
+      name,
+      description,
+      furniture,
+      price,
+      capacity,
+      available: capacity
+    });
+
+    res.json(roomType);
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Server error" });
   }
 };
 
+// Lấy tất cả RoomType theo hotel
 exports.getRoomTypes = async (req, res) => {
   try {
-    const hotel_id = req.user.hotel_id;
+    const { hotel_id } = req.query;
     const roomTypes = await RoomType.findAll({ where: { hotel_id } });
     res.json(roomTypes);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ msg: "Server error" });
   }
 };
 
+// Lấy 1 RoomType theo id
+exports.getRoomTypeById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const roomType = await RoomType.findByPk(id);
+
+    if (!roomType) return res.status(404).json({ msg: "RoomType not found" });
+
+    res.json(roomType);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
+// Update RoomType
 exports.updateRoomType = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, basic_price } = req.body;
-    const hotel_id = req.user.hotel_id;
+    const roomType = await RoomType.findByPk(id);
 
-    const roomType = await RoomType.findOne({ where: { room_type_id: id, hotel_id } });
     if (!roomType) return res.status(404).json({ msg: "RoomType not found" });
+    if (req.user.role !== "manager" || req.user.hotel_id !== roomType.hotel_id) {
+      return res.status(403).json({ msg: "You can only update your hotel room types" });
+    }
 
-    roomType.name = name || roomType.name;
-    roomType.description = description || roomType.description;
-    roomType.basic_price = basic_price || roomType.basic_price;
-    await roomType.save();
-
-    res.json({ msg: "RoomType updated", roomType });
+    await roomType.update(req.body);
+    res.json(roomType);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ msg: "Server error" });
   }
 };
 
+// Delete RoomType
 exports.deleteRoomType = async (req, res) => {
   try {
     const { id } = req.params;
-    const hotel_id = req.user.hotel_id;
+    const roomType = await RoomType.findByPk(id);
 
-    const roomType = await RoomType.findOne({ where: { room_type_id: id, hotel_id } });
     if (!roomType) return res.status(404).json({ msg: "RoomType not found" });
+    if (req.user.role !== "manager" || req.user.hotel_id !== roomType.hotel_id) {
+      return res.status(403).json({ msg: "You can only delete your hotel room types" });
+    }
 
     await roomType.destroy();
     res.json({ msg: "RoomType deleted" });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ msg: "Server error" });
   }
 };

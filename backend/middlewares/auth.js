@@ -24,5 +24,23 @@ const isManager = (req, res, next) => {
   else return res.status(403).json({ msg: "Require Manager role" });
 };
 
-// Export tất cả middleware cùng 1 lần
-module.exports = { verifyToken, isAdmin, isManager };
+const isManagerOfHotel = (req, res, next) => {
+  if (req.user.role !== "manager") {
+    return res.status(403).json({ msg: "Require Manager role" });
+  }
+
+  // Nếu body hoặc params có hotel_id, so sánh với hotel_id của manager
+  if (req.user.hotel_id && req.body.hotel_id && req.user.hotel_id !== req.body.hotel_id) {
+    return res.status(403).json({ msg: "You can only manage your own hotel" });
+  }
+
+  next();
+};
+
+const isStaff = (req, res, next) => {
+  if (req.user.role === "staff") next();
+  else return res.status(403).json({ msg: "Require Staff role" });
+};
+
+module.exports = { verifyToken, isAdmin, isManager, isStaff };
+

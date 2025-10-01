@@ -2,7 +2,7 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-// Register khách hàng
+// Register khách hàng (role tự động = customer)
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -11,17 +11,13 @@ exports.register = async (req, res) => {
     const exist = await User.findOne({ where: { email } });
     if (exist) return res.status(400).json({ msg: "Email already exists" });
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Tạo user với role = customer
+    // Tạo user (password sẽ được hash bởi hook beforeSave)
     const user = await User.create({
       name,
       email,
-      password: hashedPassword,
-      role: "customer", // tự động
-      hotel_id: null,   // customer không thuộc hotel
+      password, // raw password
+      role: "customer",
+      hotel_id: null
     });
 
     res.status(201).json({ msg: "Register success", user });
@@ -39,15 +35,16 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ where: { email } });
     if (!user) return res.status(400).json({ msg: "User not found" });
 
+    // So sánh password raw với hashed password trong DB
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
 
-    // Tạo token JWT, thêm hotel_id để manager CRUD theo hotel
+    // Tạo token JWT
     const token = jwt.sign(
       {
         user_id: user.user_id,
         role: user.role,
-        hotel_id: user.hotel_id, // manager/staff mới có hotel_id
+        hotel_id: user.hotel_id
       },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
