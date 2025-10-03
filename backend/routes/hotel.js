@@ -5,7 +5,7 @@ const { verifyToken, isAdmin } = require("../middlewares/auth");
 
 // Chỉ admin mới CRUD hotel
 router.post("/", verifyToken, isAdmin, createHotel);
-router.get("/", verifyToken, isAdmin, getHotels);
+router.get("/", verifyToken, getHotels);
 router.put("/:id", verifyToken, isAdmin, updateHotel);
 router.delete("/:id", verifyToken, isAdmin, deleteHotel);
 

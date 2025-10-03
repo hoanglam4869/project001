@@ -1,18 +1,18 @@
-const { Booking, BookingItem, RoomType, Service } = require("../models");
+const { Booking, BookingItem, RoomType, Service, Voucher } = require("../models");
 
 // Tạo booking (customer)
 exports.createBooking = async (req, res) => {
   try {
-    const { hotel_id, checkin_date, checkout_date, items } = req.body;
+    const { hotel_id, checkin_date, checkout_date, items, voucher_id } = req.body;
     const user_id = req.user.user_id;
 
     if (!items || items.length === 0)
       return res.status(400).json({ msg: "No items provided" });
 
-    // Validate mỗi item thuộc hotel và lấy giá từ DB
     let total_price = 0;
     const bookingItemsData = [];
 
+    // Validate items và lấy giá từ DB
     for (const item of items) {
       let unit_price = 0;
 
@@ -49,6 +49,32 @@ exports.createBooking = async (req, res) => {
       });
     }
 
+    // Áp dụng voucher nếu có
+    let final_price = total_price;
+    let appliedVoucherId = null;
+
+    if (voucher_id) {
+      const voucher = await Voucher.findOne({ where: { voucher_id, hotel_id } });
+
+      if (!voucher)
+        return res.status(400).json({ msg: "Voucher not found or not valid for this hotel" });
+
+      const now = new Date();
+      if (now < voucher.start_date || now > voucher.end_date) {
+        return res.status(400).json({ msg: "Voucher is expired or not active" });
+      }
+
+      let discount = 0;
+      if (voucher.type === "percent") {
+        discount = (total_price * voucher.voucher_value) / 100;
+      } else if (voucher.type === "amount") {
+        discount = voucher.voucher_value;
+      }
+
+      final_price = Math.max(total_price - discount, 0);
+      appliedVoucherId = voucher.voucher_id;
+    }
+
     // Tạo booking
     const booking = await Booking.create({
       user_id,
@@ -56,19 +82,30 @@ exports.createBooking = async (req, res) => {
       checkin_date,
       checkout_date,
       total_price,
+      final_price,
+      voucher_id: appliedVoucherId,
       room_number: null,
-      status: "pending"
+      status: "pending",
     });
 
     // Tạo booking items
     const bookingItems = await Promise.all(
-      bookingItemsData.map(item => BookingItem.create({
-        booking_id: booking.booking_id,
-        ...item
-      }))
+      bookingItemsData.map(item =>
+        BookingItem.create({
+          booking_id: booking.booking_id,
+          ...item,
+        })
+      )
     );
 
-    res.status(201).json({ booking, bookingItems });
+    const bookingWithItems = await Booking.findByPk(booking.booking_id, {
+      include: [
+        { model: BookingItem, include: [RoomType, Service] },
+        { model: Voucher },
+      ],
+    });
+
+    res.status(201).json(bookingWithItems);
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Server error", error: err.message });
@@ -81,7 +118,10 @@ exports.getMyBookings = async (req, res) => {
     const user_id = req.user.user_id;
     const bookings = await Booking.findAll({
       where: { user_id },
-      include: [{ model: BookingItem, include: [RoomType, Service] }]
+      include: [
+        { model: BookingItem, include: [RoomType, Service] },
+        { model: Voucher },
+      ],
     });
     res.json(bookings);
   } catch (err) {
@@ -99,7 +139,10 @@ exports.getAllBookings = async (req, res) => {
     }
     const bookings = await Booking.findAll({
       where: whereClause,
-      include: [{ model: BookingItem, include: [RoomType, Service] }]
+      include: [
+        { model: BookingItem, include: [RoomType, Service] },
+        { model: Voucher },
+      ],
     });
     res.json(bookings);
   } catch (err) {

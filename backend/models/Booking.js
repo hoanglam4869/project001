@@ -12,7 +12,15 @@ const Booking = sequelize.define("Booking", {
     type: DataTypes.ENUM("pending", "accepted", "checkin", "checkout", "service_done", "cancelled"),
     defaultValue: "pending"
   },
-  total_price: { type: DataTypes.DECIMAL, allowNull: false, defaultValue: 0 }
+  total_price: { type: DataTypes.DECIMAL, allowNull: false, defaultValue: 0 },
+  voucher_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  final_price: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true, // sau khi áp dụng voucher
+  },
 }, {
   tableName: "bookings",
   timestamps: true

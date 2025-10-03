@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
@@ -19,6 +20,8 @@ const roomTypeRoutes = require("./routes/roomType");
 const serviceRoutes = require("./routes/service");
 const bookingRoutes = require("./routes/booking");
 const bookingItemRoutes = require("./routes/bookingItem");
+const voucherRoutes = require("./routes/voucher");
+
 
 // Gắn routes
 app.use("/api/auth", authRoutes);
@@ -28,6 +31,20 @@ app.use("/api/roomTypes", roomTypeRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/bookingItems", bookingItemRoutes);
+app.use("/api/vouchers", voucherRoutes);
+
+
+
+
+// Serve React build
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+});
+
+
+
 
 // Test route
 app.get("/", (req, res) => {
