@@ -9,7 +9,10 @@ const User = require("./models/User");
 
 // Khởi tạo app
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173", // FE React
+  credentials: true
+}));
 app.use(express.json());
 
 // Routes

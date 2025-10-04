@@ -1,0 +1,67 @@
+$fontT: 24px;
+$fontD: 20px;
+$coFont: #ffffff;
+$coBg: #14304f;
+
+
+
+body{
+    padding: 0;
+    margin: 0;
+    color: $coFont;
+
+}
+.header{
+    background-color: $coBg;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10%;
+    &-left{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        img{
+            width: 150px;
+            height: 100px;            
+        }
+        p{
+            margin-top: 0;
+            font-size: $fontT;
+        }
+    }
+    &-right{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        img{
+            width: 30px;
+            height: 30px;
+        }
+        p{
+            margin: 0;
+        }
+        &-info{
+            font-size: $fontD;
+            display: flex;
+            justify-content: flex-end;
+            gap: 40px;
+            .inform{
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+        }
+        &-menu{
+            ul{
+                list-style: none;
+                display: flex;
+                justify-content: flex-end;
+                font-size: $fontT;
+                gap: 50px;
+                position: relative;
+                top: 25px;
+            }
+            
+        }
+    }
+}
