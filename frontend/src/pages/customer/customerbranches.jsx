@@ -1,6 +1,11 @@
 // CustomerBranches.jsx
 import React, { useEffect, useState } from "react";
+import "../../css/branches.scss"
 import API from "../../api/api.js"; // axios instance có interceptor
+import Header from "../../components/header"; // ✅ thêm dòng này
+import hotel from "../../assets/hotel.png";
+import room from "../../assets/room.png";
+
 
 const CustomerBranches = () => {
   const [branches, setBranches] = useState([]);
@@ -46,59 +51,86 @@ const CustomerBranches = () => {
 
   return (
     <div>
-      <h2>Danh sách chi nhánh</h2>
-      {error && <p>{error}</p>}
-      <ul>
-        {branches.map((b) => (
-          <li key={b.hotel_id}>
-            <button onClick={() => handleSelectHotel(b)}>
-              <strong>{b.name}</strong> - {b.address}
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      {selectedHotel && (
-        <div>
-          <h3>Chi nhánh: {selectedHotel.name}</h3>
-
-          <h4>Loại phòng</h4>
-          {roomTypes.length > 0 ? (
-            <ul>
-              {roomTypes.map((r) => (
-                <li key={r.id}>
-                  <strong>{r.name}</strong> - {r.price} VND
-                  <br />
-                  Sức chứa: {r.capacity} người
-                  <br />
-                  Nội thất: {r.furniture}
-                  <br />
-                  {r.description}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>Không có loại phòng nào</p>
-          )}
-
-          <h4>Dịch vụ</h4>
-          {services.length > 0 ? (
-            <ul>
-              {services.map((s) => (
-                <li key={s.id}>
-                  <strong>{s.name}</strong> - {s.price} VND
-                  <br />
-                  {s.description}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>Không có dịch vụ nào</p>
-          )}
+      <Header /> {/* ✅ hiển thị header ở đầu trang */}
+      <div className="container">
+        <div className="container-left">
+          <h3>Filter search</h3>
+          <div className="branch">
+            <img src={hotel} alt="Hotel"/>
+            <p>Branch</p>
+          </div>
+          
+          <ul>
+            <li>Da Nang</li>
+            <li>Hai Phong</li>
+            <li>Ha Noi</li>
+          </ul>
         </div>
-      )}
-    </div>
+        <div className="container-right">
+          <div className="top">
+            <div className="top-left">
+              <p>Sort by price</p>
+              <ul>
+                <li>Low to high</li>
+                <li>High to low</li>
+              </ul>
+            </div>
+            <div className="top-right">
+              <p>Search by name</p>
+              <input type="text"></input>
+              <button>Search</button>
+            </div>
+          </div>
+          <div className="bottom">
+            <ul className="room">
+              <li>
+                <ul className="room-slot">
+                  <li className="room-slot-pic"><img src={room} alt="Hotline"/></li>
+                  <li className="room-slot-name">Best Western Orlando Gateway Hotel  </li>
+                  <li className="room-slot-price">1000</li>
+                  <li className="room-slot-review">5.0</li>
+                  <li className="room-slot-address">Address</li>
+                  <li className="room-slot-branch">Branch</li>
+                </ul>
+              </li>
+              <li>
+                <ul className="room-slot">
+                  <li className="room-slot-pic"><img src={room} alt="Hotline"/></li>
+                  <li className="room-slot-name">Best Western Orlando Gateway Hotel  </li>
+                  <li className="room-slot-price">1000</li>
+                  <li className="room-slot-review">5.0</li>
+                  <li className="room-slot-address">Address</li>
+                  <li className="room-slot-branch">Branch</li>
+                </ul>
+              </li>
+              <li>
+                <ul className="room-slot">
+                  <li className="room-slot-pic"><img src={room} alt="Hotline"/></li>
+                  <li className="room-slot-name">Best Western Orlando Gateway Hotel  </li>
+                  <li className="room-slot-price">1000</li>
+                  <li className="room-slot-review">5.0</li>
+                  <li className="room-slot-address">Address</li>
+                  <li className="room-slot-branch">Branch</li>
+                </ul>
+              </li>
+              <li>
+                <ul className="room-slot">
+                  <li className="room-slot-pic"><img src={room} alt="Hotline"/></li>
+                  <li className="room-slot-name">Best Western Orlando Gateway Hotel  </li>
+                  <li className="room-slot-price">1000</li>
+                  <li className="room-slot-review">5.0</li>
+                  <li className="room-slot-address">Address</li>
+                  <li className="room-slot-branch">Branch</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
 
+      </div>
+
+
+    </div>
   );
 };
 

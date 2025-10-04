@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Header from "../../components/header";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -51,29 +52,32 @@ function Login() {
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "50px auto" }}>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ width: "100%", marginBottom: "10px" }}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ width: "100%", marginBottom: "10px" }}
-        />
-        <button type="submit" style={{ width: "100%" }}>Login</button>
-      </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-    </div>
+    <>
+      <Header />
+      <div style={{ maxWidth: "400px", margin: "50px auto" }}>
+        <h2>Login</h2>
+        <form onSubmit={handleLogin}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={{ width: "100%", marginBottom: "10px" }}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={{ width: "100%", marginBottom: "10px" }}
+          />
+          <button type="submit" style={{ width: "100%" }}>Login</button>
+        </form>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+      </div>
+    </>
   );
 }
 
