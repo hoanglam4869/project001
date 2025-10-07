@@ -1,11 +1,7 @@
-// CustomerBranches.jsx
 import React, { useEffect, useState } from "react";
-import "../../css/branches.scss"
-import API from "../../api/api.js"; // axios instance có interceptor
-import Header from "../../components/header"; // ✅ thêm dòng này
-import hotel from "../../assets/hotel.png";
-import room from "../../assets/room.png";
-
+import "../../css/branches.scss";
+import API from "../../api/api.js";
+import Header from "../../components/header";
 
 const CustomerBranches = () => {
   const [branches, setBranches] = useState([]);
@@ -14,16 +10,12 @@ const CustomerBranches = () => {
   const [roomTypes, setRoomTypes] = useState([]);
   const [services, setServices] = useState([]);
 
+  // Lấy danh sách chi nhánh
   useEffect(() => {
     const fetchBranches = async () => {
       try {
         const res = await API.get("/api/hotels");
-        if (Array.isArray(res.data)) {
-          setBranches(res.data);
-        } else {
-          setBranches([]);
-          setError("Invalid API response format");
-        }
+        setBranches(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error("Fetch error:", err);
         setError("Không thể tải danh sách chi nhánh");
@@ -32,14 +24,12 @@ const CustomerBranches = () => {
     fetchBranches();
   }, []);
 
+  // Khi chọn chi nhánh
   const handleSelectHotel = async (hotel) => {
     setSelectedHotel(hotel);
     try {
-      // lấy room types
       const roomRes = await API.get(`/api/roomtypes?hotel_id=${hotel.hotel_id}`);
-      // lấy services
       const serviceRes = await API.get(`/api/services?hotel_id=${hotel.hotel_id}`);
-
       setRoomTypes(Array.isArray(roomRes.data) ? roomRes.data : []);
       setServices(Array.isArray(serviceRes.data) ? serviceRes.data : []);
     } catch (err) {
@@ -51,85 +41,82 @@ const CustomerBranches = () => {
 
   return (
     <div>
-      <Header /> {/* ✅ hiển thị header ở đầu trang */}
-      <div className="container">
-        <div className="container-left">
-          <h3>Filter search</h3>
-          <div className="branch">
-            <img src={hotel} alt="Hotel"/>
-            <p>Branch</p>
-          </div>
-          
+      <Header />
+      <div className="branches-container">
+        {/* Sidebar */}
+        <div className="branches-sidebar">
+          <h2>Danh sách chi nhánh</h2>
+          {error && <p className="error">{error}</p>}
           <ul>
-            <li>Da Nang</li>
-            <li>Hai Phong</li>
-            <li>Ha Noi</li>
+            {branches.map((b) => (
+              <li
+                key={b.hotel_id}
+                onClick={() => handleSelectHotel(b)}
+                className={selectedHotel?.hotel_id === b.hotel_id ? "active" : ""}
+              >
+                <strong>{b.name}</strong>
+                <p>{b.address}</p>
+              </li>
+            ))}
           </ul>
         </div>
-        <div className="container-right">
-          <div className="top">
-            <div className="top-left">
-              <p>Sort by price</p>
-              <ul>
-                <li>Low to high</li>
-                <li>High to low</li>
-              </ul>
+
+        {/* Nội dung chính */}
+        <div className="branches-content">
+          {!selectedHotel ? (
+            <div className="placeholder">
+              <h3>Hãy chọn một chi nhánh để xem phòng và dịch vụ</h3>
             </div>
-            <div className="top-right">
-              <p>Search by name</p>
-              <input type="text"></input>
-              <button>Search</button>
-            </div>
-          </div>
-          <div className="bottom">
-            <ul className="room">
-              <li>
-                <ul className="room-slot">
-                  <li className="room-slot-pic"><img src={room} alt="Hotline"/></li>
-                  <li className="room-slot-name">Best Western Orlando Gateway Hotel  </li>
-                  <li className="room-slot-price">1000</li>
-                  <li className="room-slot-review">5.0</li>
-                  <li className="room-slot-address">Address</li>
-                  <li className="room-slot-branch">Branch</li>
-                </ul>
-              </li>
-              <li>
-                <ul className="room-slot">
-                  <li className="room-slot-pic"><img src={room} alt="Hotline"/></li>
-                  <li className="room-slot-name">Best Western Orlando Gateway Hotel  </li>
-                  <li className="room-slot-price">1000</li>
-                  <li className="room-slot-review">5.0</li>
-                  <li className="room-slot-address">Address</li>
-                  <li className="room-slot-branch">Branch</li>
-                </ul>
-              </li>
-              <li>
-                <ul className="room-slot">
-                  <li className="room-slot-pic"><img src={room} alt="Hotline"/></li>
-                  <li className="room-slot-name">Best Western Orlando Gateway Hotel  </li>
-                  <li className="room-slot-price">1000</li>
-                  <li className="room-slot-review">5.0</li>
-                  <li className="room-slot-address">Address</li>
-                  <li className="room-slot-branch">Branch</li>
-                </ul>
-              </li>
-              <li>
-                <ul className="room-slot">
-                  <li className="room-slot-pic"><img src={room} alt="Hotline"/></li>
-                  <li className="room-slot-name">Best Western Orlando Gateway Hotel  </li>
-                  <li className="room-slot-price">1000</li>
-                  <li className="room-slot-review">5.0</li>
-                  <li className="room-slot-address">Address</li>
-                  <li className="room-slot-branch">Branch</li>
-                </ul>
-              </li>
-            </ul>
-          </div>
+          ) : (
+            <>
+              <div className="hotel-header">
+                <h2>{selectedHotel.name}</h2>
+                <p>{selectedHotel.address}</p>
+              </div>
+
+              {/* Phòng */}
+              <section className="room-section">
+                <h3>Loại phòng</h3>
+                {roomTypes.length > 0 ? (
+                  <div className="room-grid">
+                    {roomTypes.map((r) => (
+                      <div key={r.id} className="room-card">
+                        <div className="room-info">
+                          <h4>{r.name}</h4>
+                          <p className="desc">{r.description}</p>
+                          <p className="price">{r.price.toLocaleString()} VND</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p>Không có loại phòng nào.</p>
+                )}
+              </section>
+
+              {/* Dịch vụ */}
+              <section className="service-section">
+                <h3>Dịch vụ</h3>
+                {services.length > 0 ? (
+                  <div className="service-grid">
+                    {services.map((s) => (
+                      <div key={s.id} className="service-card">
+                        <div className="service-info">
+                          <h4>{s.name}</h4>
+                          <p className="desc">{s.description}</p>
+                          <p className="price">{s.price.toLocaleString()} VND</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p>Không có dịch vụ nào.</p>
+                )}
+              </section>
+            </>
+          )}
         </div>
-
       </div>
-
-
     </div>
   );
 };

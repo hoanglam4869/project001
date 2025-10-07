@@ -1,16 +1,16 @@
 // Màu chủ đạo
-$color-ocean-blue: #1E88E5;   // xanh biển tươi mát
+$color-ocean-blue: #1E88E5; // xanh biển tươi mát
 $color-forest-green: #2E7D32; // xanh lá rừng dịu mắt
-$color-white: #FFFFFF;        // trắng tinh khiết
+$color-white: #FFFFFF; // trắng tinh khiết
 
 // Màu phụ trợ / nhấn
-$color-sky-blue: #4FC3F7;     // xanh trời nhẹ
-$color-leaf-green: #66BB6A;   // xanh lá non
-$color-sand: #F5F5DC;         // màu cát / nền ấm áp
+$color-sky-blue: #4FC3F7; // xanh trời nhẹ
+$color-leaf-green: #66BB6A; // xanh lá non
+$color-sand: #F5F5DC; // màu cát / nền ấm áp
 
 // Text
-$color-text-dark: #212121;    // chữ chính (đen xám)
-$color-text-light: #FAFAFA;   // chữ trên nền tối
+$color-text-dark: #212121; // chữ chính (đen xám)
+$color-text-light: #FAFAFA; // chữ trên nền tối
 
 // Background
 $bg-light: #F9FAFB;
@@ -18,98 +18,194 @@ $bg-dark: #0D1B2A;
 
 
 
-.container{
+.container {
     margin-top: 20px;
     display: flex;
     justify-content: center;
     gap: 5%;
-    &-left{
+
+    &-left {
+        width: 15%;
         border-right: 2px solid green;
         background-color: $bg-light;
         padding: 10px;
         border-radius: 20px;
-        h3{
-            background-color: $color-sky-blue;
-            padding: 10px;
+        height: fit-content;
+
+        h3 {
+            background-image: url(../assets/bgfilter.jpg);
+            background-size: cover;
+            padding: 20px;
             margin-bottom: 0;
             border-radius: 20px;
+            text-align: center;
         }
-        .branch{
+
+        .branch {
             display: flex;
             align-items: center;
-            gap: 20%;
+            gap: 5%;
             border-bottom: 2px solid #1E88E5;
-            img{
+
+            img {
                 width: 20px;
                 height: 100%;
             }
         }
-        ul{
+
+        ul {
             list-style: none;
             padding: 0;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            li{
+
+            li {
                 border-bottom: 2px solid #1E88E5;
                 margin-left: 20px;
             }
         }
 
     }
-    &-right{
-        width: 80%;
-        .top{
+
+    &-right {
+
+        width: 70%;
+
+        .top {
             border-radius: 10px;
             display: flex;
             justify-content: space-between;
-            &-left{
+
+            &-left {
                 align-items: center;
                 display: flex;
-                ul{
+
+                ul {
                     padding: 0;
                     margin-left: 10px;
                     list-style: none;
                     display: flex;
                     gap: 10px;
-                    li{
+
+                    li {
                         background-color: $color-ocean-blue;
                         padding: 5px;
                         border-radius: 20px;
                     }
                 }
             }
-            &-right{
+
+            &-right {
                 display: flex;
                 align-items: center;
                 gap: 10px;
             }
         }
-        .bottom{
-            .room{
-                list-style: none;
-                padding: 0;
-                display: flex;
-                justify-content: space-between;
-                gap: 2%;
-                &-slot{
-                    background-color: red;
-                    border-radius: 10px;
-                    padding: 0;
+
+        .bottom {
+            display: flex;
+            flex-direction: column;
+            gap: 100px;
+            &-room{
+                &-title{
                     list-style: none;
-                    li{
-                    }
-                    &-pic{
+                    padding: 0;
+                    font-size: 20px;
+                    font-weight: bold;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    margin-bottom: 10px;
+                }
+                &-list{
+                    display: flex;
+                    gap: 3%;
+                    .room{
+                        border-radius: 10px;
+                        box-shadow: 0 4px 8px gray;
+                        list-style: none;
+                        padding: 0;
                         img{
-                            width: 100%;       
-                            border-top-left-radius: 10px;   
-                            border-top-right-radius: 10px;                  
+                            width: 100%;
+                            border-radius: 10px;
+                        }
+                        &-name{
+                            font-weight: bold;
+                            margin-bottom: 10px;
+                            margin-left: 5%;
+                            margin-top: 5%;
+                        }
+                        &-description{
+                            margin-bottom: 10px;
+                            margin-left: 5%;
+                        }
+                        &-price{
+                            text-align: right;
+                            font-weight: bold;
+                            color: #ffad43;
+
+                        }
+                        &-detail{
+                            button{
+                                background-color: $color-sand;
+                                padding:  10px 20px;
+                                border-style: none;
+                                margin-left: 5%;
+                                margin-bottom: 10%;
+                            }
                         }
                     }
-                    &-name{
-                        font-weight: bold;
-                    }
+
+
                 }
+                
+
+            }
+            &-service{
+                &-title{
+                    list-style: none;
+                    padding: 0;
+                    font-size: 20px;
+                    font-weight: bold;
+                    display: flex;
+                    gap: 10px;
+                    margin-bottom: 10px;
+                }
+                &-list{
+                    display: flex;
+                    gap: 3%;
+                    .service{
+                        list-style: none;
+                        padding: 0;
+                        img{
+                            width: 100%;
+                            border-radius: 10px;
+                        }
+                        &-name{
+                            font-weight: bold;
+                            margin-bottom: 10px;
+                        }
+                        &-description{
+                            margin-bottom: 10px;
+                        }
+                        &-price{
+                            text-align: right;
+                            font-weight: bold;
+                            color: #ffad43;
+                        }
+                        &-order{
+                            button{
+                                background-color: $color-sand;
+                                padding:  10px 20px;
+                                border-style: none;
+                            }
+                        }
+                    }
+
+
+                }
+
             }
         }
     }
