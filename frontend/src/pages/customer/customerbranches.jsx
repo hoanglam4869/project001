@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import "../../css/branches.scss";
 import API from "../../api/api.js";
-import Header from "../../components/header";
+import { Link } from "react-router-dom";
 
 const CustomerBranches = () => {
   const [branches, setBranches] = useState([]);
@@ -41,7 +40,7 @@ const CustomerBranches = () => {
 
   return (
     <div>
-      <Header />
+
       <div className="branches-container">
         {/* Sidebar */}
         <div className="branches-sidebar">
@@ -85,6 +84,9 @@ const CustomerBranches = () => {
                           <h4>{r.name}</h4>
                           <p className="desc">{r.description}</p>
                           <p className="price">{r.price.toLocaleString()} VND</p>
+                          <Link to={`/customer/room/${r.room_type_id}`}>
+                            <button className="btn-detail">Chi tiết phòng</button>
+                          </Link>
                         </div>
                       </div>
                     ))}
@@ -105,6 +107,9 @@ const CustomerBranches = () => {
                           <h4>{s.name}</h4>
                           <p className="desc">{s.description}</p>
                           <p className="price">{s.price.toLocaleString()} VND</p>
+                          <Link to={`/customer/service/${s.service_id}`}>
+                            <button className="btn-detail">Chi tiết dịch vụ</button>
+                          </Link>
                         </div>
                       </div>
                     ))}
