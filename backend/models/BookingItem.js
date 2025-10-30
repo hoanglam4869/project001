@@ -8,10 +8,7 @@ const BookingItem = sequelize.define("BookingItem", {
   service_id: { type: DataTypes.INTEGER, allowNull: true },
   quantity: { type: DataTypes.INTEGER, allowNull: false },
   unit_price: { type: DataTypes.DECIMAL, allowNull: false },
-  total_price: { type: DataTypes.DECIMAL, allowNull: false },
-  customer_name: { type: DataTypes.STRING, allowNull: true },
-  customer_email: { type: DataTypes.STRING, allowNull: true },
-  customer_phone: { type: DataTypes.STRING, allowNull: true }
+  total_price: { type: DataTypes.DECIMAL, allowNull: false }
 }, {
   tableName: "booking_items",
   timestamps: true

@@ -6,6 +6,9 @@ const Booking = sequelize.define("Booking", {
   user_id: { type: DataTypes.INTEGER, allowNull: false },
   hotel_id: { type: DataTypes.INTEGER, allowNull: false },
   room_number: { type: DataTypes.STRING, allowNull: true }, // nhân viên gán
+  customer_name: { type: DataTypes.STRING, allowNull: false },
+  customer_email: { type: DataTypes.STRING, allowNull: false },
+  customer_phone: { type: DataTypes.STRING, allowNull: false },
   checkin_date: { type: DataTypes.DATE, allowNull: true },
   checkout_date: { type: DataTypes.DATE, allowNull: true },
   status: {

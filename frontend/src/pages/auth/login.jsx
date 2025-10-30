@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Header from "../../components/header";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -22,13 +21,24 @@ function Login() {
         return;
       }
 
-      // ✅ Lưu token và role
+      // ✅ Lưu token
       localStorage.setItem("token", data.token);
 
+      // ✅ Giải mã payload JWT
       const payload = JSON.parse(atob(data.token.split(".")[1]));
-      localStorage.setItem("role", payload.role);
 
-      // ✅ Redirect theo role
+      // ✅ Lưu role & user info
+      localStorage.setItem("role", payload.role);
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          user_id: payload.user_id || payload.id, // tùy backend
+          email: payload.email,
+          role: payload.role,
+        })
+      );
+
+      // ✅ Điều hướng theo vai trò
       switch (payload.role) {
         case "customer":
           window.location.href = "/customer/branches";
@@ -53,7 +63,6 @@ function Login() {
 
   return (
     <>
-      <Header />
       <div style={{ maxWidth: "400px", margin: "50px auto" }}>
         <h2>Login</h2>
         <form onSubmit={handleLogin}>
@@ -73,7 +82,9 @@ function Login() {
             required
             style={{ width: "100%", marginBottom: "10px" }}
           />
-          <button type="submit" style={{ width: "100%" }}>Login</button>
+          <button type="submit" style={{ width: "100%" }}>
+            Login
+          </button>
         </form>
         {error && <p style={{ color: "red" }}>{error}</p>}
       </div>

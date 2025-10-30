@@ -37,6 +37,10 @@ app.use("/api/bookingItems", bookingItemRoutes);
 app.use("/api/vouchers", voucherRoutes);
 
 
+// ✅ Webhook PayOS
+const { payOSWebhook } = require("./controllers/bookingController");
+app.post("/api/payos/webhook", payOSWebhook);
+
 
 
 // Serve React build
