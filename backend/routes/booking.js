@@ -20,9 +20,6 @@ router.delete("/:id", verifyToken, deleteBooking);
 
 router.post("/:id/payment-payos", verifyToken, createQR);
 
-// route test nhanh bằng body
-router.post("/payment-payos", verifyToken, createQR);
-
 // PayOS callback (webhook) — không verifyToken vì PayOS gọi trực tiếp
 router.post("/payos/webhook", payOSWebhook);
 

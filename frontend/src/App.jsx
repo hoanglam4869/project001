@@ -6,6 +6,7 @@ import CustomerBranches from './pages/customer/customerbranches.jsx';
 import RoomDetail from './pages/customer/roomDetail.jsx';
 import ServiceDetail from './pages/customer/serviceDetail.jsx';
 import Cart from "./pages/customer/cart.jsx";
+import BookingCreate from './pages/customer/bookingcreate.jsx';
 
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="/customer/room/:id" element={<RoomDetail />} />
         <Route path="/customer/service/:id" element={<ServiceDetail />} />
         <Route path="/customer/cart" element={<Cart />} />
+        <Route path="/customer/booking-create" element={<BookingCreate />} />
       </Routes>
     </BrowserRouter>
   )

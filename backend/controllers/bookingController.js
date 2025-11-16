@@ -24,8 +24,24 @@ exports.createBooking = async (req, res) => {
     if (!checkin_date || !checkout_date)
       return res.status(400).json({ msg: "Missing check-in or check-out date" });
 
+    const checkin = new Date(checkin_date);
+    const checkout = new Date(checkout_date);
+    const now = new Date();
+
+    // ✅ Kiểm tra ngày không ở quá khứ
+    if (checkin < now || checkout < now)
+      return res.status(400).json({ msg: "Check-in/check-out date cannot be in the past" });
+
+    // ✅ Kiểm tra checkout phải sau checkin
+    if (checkout <= checkin)
+      return res.status(400).json({ msg: "Check-out date must be after check-in date" });
+
     if (!customer_name || !customer_email || !customer_phone)
       return res.status(400).json({ msg: "Missing customer information" });
+
+    // ✅ Tính số ngày ở
+    const diffTime = checkout.getTime() - checkin.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     let total_price = 0;
     const bookingItemsData = [];
@@ -41,7 +57,7 @@ exports.createBooking = async (req, res) => {
         if (roomType.hotel_id !== hotel_id)
           return res.status(400).json({ msg: `Room type ${item.room_type_id} not in this hotel` });
 
-        // kiểm tra trùng ngày
+        // kiểm tra phòng trùng ngày
         const overlappingBookings = await Booking.findAll({
           where: {
             hotel_id,
@@ -81,14 +97,15 @@ exports.createBooking = async (req, res) => {
         unit_price = service.price;
       }
 
-      const total_item_price = unit_price * item.quantity;
+      // ✅ Tính tổng tiền item nhân số ngày
+      const total_item_price = unit_price * item.quantity * diffDays;
       total_price += total_item_price;
 
       bookingItemsData.push({
         room_type_id: item.room_type_id || null,
         service_id: item.service_id || null,
         quantity: item.quantity,
-        unit_price,
+        unit_price: unit_price * diffDays, // lưu unit_price đã nhân ngày
         total_price: total_item_price,
       });
     }
@@ -102,7 +119,6 @@ exports.createBooking = async (req, res) => {
       if (!voucher)
         return res.status(400).json({ msg: "Voucher not found or invalid" });
 
-      const now = new Date();
       if (now < voucher.start_date || now > voucher.end_date)
         return res.status(400).json({ msg: "Voucher expired or inactive" });
 
@@ -152,6 +168,7 @@ exports.createBooking = async (req, res) => {
     res.status(500).json({ msg: "Server error", error: error.message });
   }
 };
+
 
 exports.getMyBookings = async (req, res) => {
   try {

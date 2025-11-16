@@ -1,4 +1,3 @@
-// src/pages/customer/cart.jsx
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "../../components/header";
@@ -20,7 +19,6 @@ const Cart = () => {
   const userId = getCurrentUserId();
   const cartKey = `${CART_KEY_PREFIX}${userId}`;
   const navigate = useNavigate();
-
   const [items, setItems] = useState([]);
 
   useEffect(() => {
@@ -60,12 +58,16 @@ const Cart = () => {
     setItems([]);
   };
 
-  const subtotal = items.reduce((s, it) => s + (it.price || 0) * (it.quantity || 0), 0);
+  const subtotal = items.reduce(
+    (s, it) => s + (it.price || 0) * (it.quantity || 0),
+    0
+  );
 
-  // Khi nhấn thanh toán, chuyển tới trang checkout (mình sẽ làm file checkout ở bước tiếp theo)
+  // 🚀 Khi nhấn “Tiến hành thanh toán” → chuyển đến BookingCreate
   const proceedToCheckout = () => {
-    // bạn có thể pass cart info qua state hoặc checkout đọc từ localStorage tiếp
-    navigate("/customer/checkout");
+    // Lưu tạm cart dùng chung key để BookingCreate đọc lại
+    localStorage.setItem("cart", JSON.stringify(items));
+    navigate("/customer/booking-create");
   };
 
   return (
@@ -98,7 +100,9 @@ const Cart = () => {
                   <tr key={idx} style={{ borderTop: "1px solid #eee" }}>
                     <td style={{ padding: 8 }}>{it.name}</td>
                     <td style={{ padding: 8 }}>{it.type}</td>
-                    <td style={{ padding: 8 }}>{(it.price || 0).toLocaleString()} VND</td>
+                    <td style={{ padding: 8 }}>
+                      {(it.price || 0).toLocaleString()} VND
+                    </td>
                     <td style={{ padding: 8 }}>
                       <input
                         type="number"
@@ -109,7 +113,8 @@ const Cart = () => {
                       />
                     </td>
                     <td style={{ padding: 8 }}>
-                      {((it.price || 0) * (it.quantity || 0)).toLocaleString()} VND
+                      {((it.price || 0) * (it.quantity || 0)).toLocaleString()}{" "}
+                      VND
                     </td>
                     <td style={{ padding: 8 }}>
                       <button onClick={() => removeItem(idx)}>Xóa</button>
@@ -119,7 +124,13 @@ const Cart = () => {
               </tbody>
             </table>
 
-            <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between" }}>
+            <div
+              style={{
+                marginTop: 16,
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
               <div>
                 <button onClick={clearCart} style={{ marginRight: 8 }}>
                   Xóa toàn bộ
@@ -132,7 +143,9 @@ const Cart = () => {
               <div>
                 <strong>Tổng: {(subtotal || 0).toLocaleString()} VND</strong>
                 <div style={{ marginTop: 8 }}>
-                  <button onClick={proceedToCheckout}>Tiến hành thanh toán</button>
+                  <button onClick={proceedToCheckout}>
+                    Tiến hành thanh toán
+                  </button>
                 </div>
               </div>
             </div>
