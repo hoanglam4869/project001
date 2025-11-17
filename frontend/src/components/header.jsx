@@ -72,6 +72,18 @@ const Header = () => {
             <li>Liên hệ</li>
             <li>Về chúng tôi</li>
 
+            {/* 👇 THÊM LINK LỊCH SỬ ĐẶT PHÒNG TẠI ĐÂY */}
+            {token && (
+              <li>
+                <Link
+                  to="/customer/booking-history"
+                  style={{ textDecoration: "none", color: "inherit" }}
+                >
+                  Lịch sử đặt phòng
+                </Link>
+              </li>
+            )}
+
             {token && (
               <li>
                 <button

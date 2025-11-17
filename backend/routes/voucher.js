@@ -6,7 +6,8 @@ const {
   getVouchers,
   getVoucherById,
   updateVoucher,
-  deleteVoucher
+  deleteVoucher,
+  applyVoucher // 1. Import hàm mới
 } = require("../controllers/voucherController");
 
 // Staff/Manager tạo voucher
@@ -14,6 +15,10 @@ router.post("/", verifyToken, isStaff, createVoucher);
 
 // Lấy tất cả voucher (theo role)
 router.get("/", verifyToken, getVouchers);
+
+// 2. THÊM ROUTE MỚI TẠI ĐÂY
+// (Phải đặt TRƯỚC route "/:id")
+router.get("/apply", verifyToken, applyVoucher);
 
 // Lấy 1 voucher
 router.get("/:id", verifyToken, getVoucherById);

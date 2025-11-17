@@ -12,25 +12,25 @@ const BookingCreate = () => {
     customer_phone: "",
     checkin_date: new Date().toISOString().split("T")[0],
     checkout_date: new Date(Date.now() + 86400000).toISOString().split("T")[0],
-    voucher_id: "",   // 👉 Đổi từ voucher_code sang voucher_id
+    voucher_id: "",
     payment_method: "CASH",
   });
 
   const [items, setItems] = useState([]);
   const [vouchers, setVouchers] = useState([]);
   const [diffDays, setDiffDays] = useState(1);
+
   const [subtotal, setSubtotal] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [total, setTotal] = useState(0);
+
   const [error, setError] = useState("");
 
-  // Load cart
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("cart")) || [];
     setItems(saved);
   }, []);
 
-  // Load voucher theo hotel
   useEffect(() => {
     if (items.length === 0) return;
 
@@ -42,21 +42,18 @@ const BookingCreate = () => {
           params: { hotel_id: hotelId },
         });
         setVouchers(res.data);
-      } catch (err) {
-        console.error("Error loading vouchers", err);
-      }
+      } catch {}
     };
 
     loadVoucher();
   }, [items]);
 
-  // Tính subtotal, discount, total
   useEffect(() => {
     if (!form.checkin_date || !form.checkout_date) return;
 
     const start = new Date(form.checkin_date);
     const end = new Date(form.checkout_date);
-    let days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+    let days = Math.ceil((end - start) / 86400000);
     days = Math.max(days, 1);
     setDiffDays(days);
 
@@ -66,39 +63,40 @@ const BookingCreate = () => {
     );
 
     setSubtotal(sub);
+  }, [items, form.checkin_date, form.checkout_date]);
 
-    // Nếu có chọn voucher
-    if (form.voucher_id) {
-      const applyVoucher = async () => {
-        try {
-          const res = await API.get(`/api/vouchers/apply`, {
-            params: { voucher_id: form.voucher_id, subtotal: sub },
-          });
+  useEffect(() => {
+    const applyVoucher = async () => {
+      if (!form.voucher_id) {
+        setDiscount(0);
+        setTotal(subtotal);
+        return;
+      }
 
-          const v = res.data;
-          setDiscount(v.discount);
-          setTotal(v.final_price);
-        } catch (e) {
-          setDiscount(0);
-          setTotal(sub);
-        }
-      };
+      try {
+        const res = await API.get(`/api/vouchers/apply`, {
+          params: { voucher_id: form.voucher_id, subtotal },
+        });
 
-      applyVoucher();
-    } else {
-      setDiscount(0);
-      setTotal(sub);
-    }
-  }, [items, form.checkin_date, form.checkout_date, form.voucher_id]);
+        setDiscount(res.data.discount);
+        setTotal(res.data.final_price);
+      } catch (e) {
+        setDiscount(0);
+        setTotal(subtotal);
+      }
+    };
+
+    applyVoucher();
+  }, [form.voucher_id, subtotal]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const validateDates = () => {
-    const today = new Date();
-    const checkin = new Date(form.checkin_date);
-    const checkout = new Date(form.checkout_date);
+    const today = new Date().setHours(0, 0, 0, 0);
+    const checkin = new Date(form.checkin_date).setHours(0, 0, 0, 0);
+    const checkout = new Date(form.checkout_date).setHours(0, 0, 0, 0);
 
     if (!form.checkin_date || !form.checkout_date) {
       setError("Vui lòng chọn ngày check-in và check-out");
@@ -109,7 +107,7 @@ const BookingCreate = () => {
       return false;
     }
     if (checkout <= checkin) {
-      setError("Ngày check-out phải sau ngày check-in");
+      setError("Ngày check-out phải sau check-in");
       return false;
     }
     return true;
@@ -141,13 +139,11 @@ const BookingCreate = () => {
           customer_email: form.customer_email,
           customer_phone: form.customer_phone,
           voucher_id: form.voucher_id || null,
-
           items: items.map((it) => ({
             room_type_id: it.type === "room" ? it.id : null,
             service_id: it.type === "service" ? it.id : null,
             quantity: it.quantity,
           })),
-
           payment_method: method,
         },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -163,12 +159,11 @@ const BookingCreate = () => {
         );
         window.location.href = resQR.data.paymentUrl;
       } else {
-        alert("✅ Booking thành công!");
+        alert("Đặt phòng thành công!");
         localStorage.removeItem("cart");
         navigate("/customer/branches");
       }
     } catch (err) {
-      console.error(err);
       setError(err.response?.data?.msg || "Lỗi server khi tạo booking");
     }
   };
@@ -176,9 +171,10 @@ const BookingCreate = () => {
   return (
     <>
       <Header />
-      <div style={{ padding: 20 }}>
+      <div>
         <h2>Thông tin đặt phòng / dịch vụ</h2>
-        {error && <p style={{ color: "red" }}>{error}</p>}
+
+        {error && <p>{error}</p>}
 
         <input name="customer_name" placeholder="Họ và tên" value={form.customer_name} onChange={handleChange} />
         <input name="customer_email" placeholder="Email" value={form.customer_email} onChange={handleChange} />
@@ -190,13 +186,17 @@ const BookingCreate = () => {
         <label>Ngày check-out</label>
         <input type="date" name="checkout_date" value={form.checkout_date} onChange={handleChange} />
 
-        {/* ▸ VOUCHER DROPDOWN */}
         <label>Chọn voucher</label>
         <select name="voucher_id" value={form.voucher_id} onChange={handleChange}>
           <option value="">-- Không dùng voucher --</option>
           {vouchers.map((v) => (
             <option key={v.voucher_id} value={v.voucher_id}>
-              {v.code} – {v.type === "percent" ? `${v.voucher_value}%` : `${v.voucher_value.toLocaleString()} VND`}
+              {/* 👇 ĐÃ SỬA LẠI CHỖ NÀY */}
+              {v.name} 
+              {v.type === 'percent'
+                ? ` (Giảm ${parseFloat(v.voucher_value)}%)`
+                : ` (Giảm ${parseFloat(v.voucher_value).toLocaleString()} VND)`
+              }
             </option>
           ))}
         </select>
@@ -205,8 +205,7 @@ const BookingCreate = () => {
         <ul>
           {items.map((it, idx) => (
             <li key={idx}>
-              {it.name} ({it.type}) x {it.quantity} x {diffDays} ngày ={" "}
-              {(it.price * it.quantity * diffDays).toLocaleString()} VND
+              {it.name} x {it.quantity} x {diffDays} ngày = {(it.price * it.quantity * diffDays).toLocaleString()} VND
             </li>
           ))}
         </ul>
@@ -215,12 +214,8 @@ const BookingCreate = () => {
         <h3>Discount: {discount.toLocaleString()} VND</h3>
         <h3>Total: {total.toLocaleString()} VND</h3>
 
-        <div style={{ marginTop: 16 }}>
-          <button onClick={() => handleSubmit("CASH")} style={{ marginRight: 8 }}>
-            Thanh toán tiền mặt
-          </button>
-          <button onClick={() => handleSubmit("QR")}>Thanh toán online (QR PayOS)</button>
-        </div>
+        <button onClick={() => handleSubmit("CASH")}>Thanh toán tiền mặt</button>
+        <button onClick={() => handleSubmit("QR")}>Thanh toán online (QR PayOS)</button>
       </div>
     </>
   );

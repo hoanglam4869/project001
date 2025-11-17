@@ -106,3 +106,46 @@ exports.deleteVoucher = async (req, res) => {
     res.status(500).json({ msg: "Server error" });
   }
 };
+
+exports.applyVoucher = async (req, res) => {
+  try {
+    const { voucher_id, subtotal } = req.query;
+    const sTotal = parseFloat(subtotal); // Chuyển subtotal sang số
+
+    if (!voucher_id || voucher_id === "") {
+      // Nếu không chọn voucher, trả về không giảm giá
+      return res.json({ discount: 0, final_price: sTotal, voucher_id: null });
+    }
+
+    const voucher = await Voucher.findByPk(voucher_id);
+    if (!voucher) {
+      return res.status(404).json({ msg: "Voucher not found" });
+    }
+
+    // Kiểm tra ngày
+    const now = new Date();
+    if (now < voucher.start_date || now > voucher.end_date) {
+      return res.status(400).json({ msg: "Voucher expired or inactive" });
+    }
+    
+    // (Bạn có thể thêm check min_spend ở đây nếu model có)
+
+    let discount = 0;
+    if (voucher.type === "percent") {
+      discount = (sTotal * parseFloat(voucher.voucher_value)) / 100;
+    } else if (voucher.type === "amount") {
+      discount = parseFloat(voucher.voucher_value);
+    }
+
+    const final_price = Math.max(sTotal - discount, 0);
+
+    res.json({
+      discount: discount,
+      final_price: final_price,
+      voucher_id: voucher.voucher_id
+    });
+
+  } catch (error) {
+    res.status(500).json({ msg: "Server error", error: error.message });
+  }
+};

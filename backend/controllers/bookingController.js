@@ -1,7 +1,49 @@
-const { Booking, BookingItem, RoomType, Service, Voucher } = require("../models");
+const { Booking, BookingItem, RoomType, Service, Voucher, User, Hotel } = require("../models");
 const { Op } = require("sequelize");
 const payos = require('../config/payos');
-const db = require("../config/db");
+
+// HÀM MỚI: Logic phân quyền để xem chi tiết
+exports.getBookingById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { user_id, role, hotel_id } = req.user; // Lấy từ verifyToken
+
+    const booking = await Booking.findByPk(id, {
+      include: [
+        { model: BookingItem, include: [RoomType, Service] },
+        { model: Voucher },
+        { model: User, attributes: ['email', 'name'] },
+        { model: Hotel, attributes: ['name'] }
+      ],
+    });
+
+    if (!booking) {
+      return res.status(404).json({ msg: "Booking not found" });
+    }
+
+    // PHÂN QUYỀN
+    // Admin/Manager có thể xem
+    if (role === 'admin' || role === 'manager') {
+      return res.json(booking);
+    }
+
+    // Staff chỉ xem được booking của khách sạn họ
+    if (role === 'staff' && booking.hotel_id === hotel_id) {
+      return res.json(booking);
+    }
+
+    // Customer chỉ xem được booking của chính họ
+    if (role === 'customer' && booking.user_id === user_id) {
+      return res.json(booking);
+    }
+
+    // Nếu không khớp -> Từ chối
+    return res.status(403).json({ msg: "Access denied" });
+
+  } catch (error) {
+    res.status(500).json({ msg: "Server error", error: error.message });
+  }
+};
 
 exports.createBooking = async (req, res) => {
   try {
@@ -28,18 +70,15 @@ exports.createBooking = async (req, res) => {
     const checkout = new Date(checkout_date);
     const now = new Date();
 
-    // ✅ Kiểm tra ngày không ở quá khứ
     if (checkin < now || checkout < now)
       return res.status(400).json({ msg: "Check-in/check-out date cannot be in the past" });
 
-    // ✅ Kiểm tra checkout phải sau checkin
     if (checkout <= checkin)
       return res.status(400).json({ msg: "Check-out date must be after check-in date" });
 
     if (!customer_name || !customer_email || !customer_phone)
       return res.status(400).json({ msg: "Missing customer information" });
 
-    // ✅ Tính số ngày ở
     const diffTime = checkout.getTime() - checkin.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -49,7 +88,6 @@ exports.createBooking = async (req, res) => {
     for (const item of items) {
       let unit_price = 0;
 
-      // ====== ROOM TYPE ======
       if (item.room_type_id) {
         const roomType = await RoomType.findByPk(item.room_type_id);
         if (!roomType)
@@ -57,7 +95,6 @@ exports.createBooking = async (req, res) => {
         if (roomType.hotel_id !== hotel_id)
           return res.status(400).json({ msg: `Room type ${item.room_type_id} not in this hotel` });
 
-        // kiểm tra phòng trùng ngày
         const overlappingBookings = await Booking.findAll({
           where: {
             hotel_id,
@@ -86,7 +123,6 @@ exports.createBooking = async (req, res) => {
         unit_price = roomType.price;
       }
 
-      // ====== SERVICE ======
       if (item.service_id) {
         const service = await Service.findByPk(item.service_id);
         if (!service)
@@ -97,7 +133,6 @@ exports.createBooking = async (req, res) => {
         unit_price = service.price;
       }
 
-      // ✅ Tính tổng tiền item nhân số ngày
       const total_item_price = unit_price * item.quantity * diffDays;
       total_price += total_item_price;
 
@@ -105,12 +140,11 @@ exports.createBooking = async (req, res) => {
         room_type_id: item.room_type_id || null,
         service_id: item.service_id || null,
         quantity: item.quantity,
-        unit_price: unit_price * diffDays, // lưu unit_price đã nhân ngày
+        unit_price: unit_price * diffDays,
         total_price: total_item_price,
       });
     }
 
-    // ====== VOUCHER ======
     let final_price = total_price;
     let appliedVoucherId = null;
 
@@ -132,7 +166,6 @@ exports.createBooking = async (req, res) => {
       appliedVoucherId = voucher.voucher_id;
     }
 
-    // ====== TẠO BOOKING ======
     const booking = await Booking.create({
       user_id,
       hotel_id,
@@ -147,7 +180,6 @@ exports.createBooking = async (req, res) => {
       customer_phone,
     });
 
-    // ====== TẠO BOOKING ITEMS ======
     for (const item of bookingItemsData) {
       await BookingItem.create({
         booking_id: booking.booking_id,
@@ -164,7 +196,6 @@ exports.createBooking = async (req, res) => {
 
     res.status(201).json(bookingWithItems);
   } catch (error) {
-    console.error("❌ Error creating booking:", error);
     res.status(500).json({ msg: "Server error", error: error.message });
   }
 };
@@ -179,6 +210,7 @@ exports.getMyBookings = async (req, res) => {
         { model: BookingItem, include: [RoomType, Service] },
         { model: Voucher },
       ],
+      order: [['createdAt', 'DESC']]
     });
     res.json(bookings);
   } catch (error) {
@@ -188,11 +220,23 @@ exports.getMyBookings = async (req, res) => {
 
 exports.getAllBookings = async (req, res) => {
   try {
+    // Sửa: Lấy hotel_id của staff/manager từ token
+    const { role, hotel_id } = req.user;
+    let whereClause = {};
+
+    // Staff/Manager chỉ thấy booking của hotel mình
+    if (role === 'staff' || role === 'manager') {
+      whereClause.hotel_id = hotel_id;
+    }
+    // Admin thấy tất cả (whereClause = {})
+
     const bookings = await Booking.findAll({
+      where: whereClause, // Áp dụng điều kiện
       include: [
         { model: BookingItem, include: [RoomType, Service] },
         { model: Voucher },
       ],
+      order: [['createdAt', 'DESC']]
     });
     res.json(bookings);
   } catch (error) {
@@ -204,6 +248,12 @@ exports.updateBookingStatus = async (req, res) => {
   try {
     const booking = await Booking.findByPk(req.params.id);
     if (!booking) return res.status(404).json({ msg: "Booking not found" });
+    
+    // Sửa: Check quyền Staff
+    const { role, hotel_id } = req.user;
+    if ((role === 'staff' || role === 'manager') && booking.hotel_id !== hotel_id) {
+       return res.status(403).json({ msg: "Access denied" });
+    }
 
     booking.status = req.body.status || booking.status;
     await booking.save();
@@ -218,6 +268,12 @@ exports.deleteBooking = async (req, res) => {
     const booking = await Booking.findByPk(req.params.id);
     if (!booking) return res.status(404).json({ msg: "Booking not found" });
 
+    // Sửa: Check quyền Staff
+    const { role, hotel_id } = req.user;
+    if ((role === 'staff' || role === 'manager') && booking.hotel_id !== hotel_id) {
+       return res.status(403).json({ msg: "Access denied" });
+    }
+
     await BookingItem.destroy({ where: { booking_id: booking.booking_id } });
     await booking.destroy();
     res.json({ msg: "Booking deleted successfully" });
@@ -229,7 +285,6 @@ exports.deleteBooking = async (req, res) => {
 exports.createQR = async (req, res) => {
   try {
     const id = req.params.id || req.body.booking_id;
-
     if (!id) {
       return res.status(400).json({ message: "Missing booking ID" });
     }
@@ -239,14 +294,19 @@ exports.createQR = async (req, res) => {
       return res.status(404).json({ message: "Booking not found" });
     }
 
+    // SỬA: Bảo mật - Customer chỉ được tạo QR cho booking của chính mình
+    if (req.user.role === 'customer' && req.user.user_id !== booking.user_id) {
+       return res.status(403).json({ message: "Access denied" });
+    }
+    // (Staff/Manager có thể tạo QR cho khách nếu cần)
+
     const amount = Math.round(booking.final_price || booking.total_price);
     if (!amount || amount <= 0) {
       return res.status(400).json({ message: "Invalid order amount" });
     }
 
-    // ✅ Tạo yêu cầu thanh toán trên PayOS
     const response = await payos.paymentRequests.create({
-      orderCode: booking.booking_id, // ✅ đúng tên trường
+      orderCode: booking.booking_id,
       amount,
       description: `Booking payment #${booking.booking_id}`,
       returnUrl: `http://localhost:5173/success?orderId=${booking.booking_id}`,
@@ -255,7 +315,6 @@ exports.createQR = async (req, res) => {
 
     res.json({ paymentUrl: response.checkoutUrl });
   } catch (error) {
-    console.error("❌ Lỗi PayOS:", error.response?.data || error.message || error);
     res.status(500).json({ message: "Payment failed", error: error.message });
   }
 };
@@ -263,13 +322,10 @@ exports.createQR = async (req, res) => {
 
 exports.payOSWebhook = async (req, res) => {
   try {
-    console.log("📩 Webhook received:", req.body);
-
     const signature = req.headers["x-signature"];
     const verified = await payos.webhooks.verify(req.body, signature);
 
     if (!verified) {
-      console.warn("❌ Invalid signature");
       return res.status(400).json({ message: "Invalid signature" });
     }
 
@@ -280,25 +336,21 @@ exports.payOSWebhook = async (req, res) => {
 
     const booking = await Booking.findByPk(orderCode);
     if (!booking) {
-      console.warn(`⚠️ Booking #${orderCode} not found`);
       return res.status(404).json({ message: "Booking not found" });
     }
 
     if (req.body.code === "00" && req.body.success) {
-      console.log(`✅ Thanh toán thành công cho booking #${orderCode}`);
       if (booking.status === "pending") {
         booking.status = "accepted";
         await booking.save();
       }
     } else {
-      console.log(`❌ Thanh toán thất bại hoặc bị hủy cho booking #${orderCode}`);
       booking.status = "cancelled";
       await booking.save();
     }
 
     res.json({ message: "Webhook processed successfully" });
   } catch (err) {
-    console.error("❌ Webhook error:", err);
     res.status(500).json({ message: "Webhook error", error: err.message });
   }
 };
