@@ -8,32 +8,91 @@ import vnlogo from "../assets/vnlogo.png";
 
 const Header = () => {
   const navigate = useNavigate();
+  
+  // Lấy thông tin từ localStorage
   const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+  const role = localStorage.getItem("role"); 
   const user = JSON.parse(localStorage.getItem("user"));
 
+  // Xử lý đăng xuất
   const handleLogout = () => {
     if (user && user.user_id) {
-      // ✅ Xóa giỏ hàng riêng của user
+      // Xóa giỏ hàng riêng của user
       localStorage.removeItem(`bookingItems_${user.user_id}`);
     } else {
-      // ✅ Xóa giỏ hàng guest nếu có
+      // Xóa giỏ hàng guest nếu có
       localStorage.removeItem("bookingItems_guest");
     }
 
-    // ✅ Xóa thông tin đăng nhập
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("user");
+    // Xóa toàn bộ session
+    localStorage.clear(); 
 
-    // ✅ Quay về trang login
+    // Quay về trang login
     navigate("/auth/login");
+  };
+
+  // === HÀM RENDER MENU DỰA THEO ROLE ===
+  const renderNavLinks = () => {
+    // 1. Nếu chưa đăng nhập (Guest)
+    if (!token) {
+      return (
+        <>
+          <li><Link to="/">Trang chủ</Link></li>
+          <li><Link to="/customer/branches">Đặt phòng</Link></li>
+          <li><Link to="/about">Về chúng tôi</Link></li>
+          <li><Link to="/contact">Liên hệ</Link></li>
+        </>
+      );
+    }
+
+    // 2. Nếu đã đăng nhập -> Kiểm tra Role
+    switch (role) {
+      case "customer":
+        return (
+          <>
+            <li><Link to="/customer/branches">Đặt phòng ngay</Link></li>
+            <li><Link to="/customer/cart">Giỏ hàng</Link></li>
+            <li><Link to="/customer/booking-history">Lịch sử đặt phòng</Link></li>
+          </>
+        );
+
+      case "staff":
+        return (
+          <>
+            {/* Menu chức năng cho Staff */}
+            <li><Link to="/staff/bookings">Quản lý Đặt phòng</Link></li>
+            <li><Link to="/staff/vouchers">Quản lý Voucher</Link></li>
+          </>
+        );
+
+      case "manager":
+        return (
+          <>
+            <li><Link to="/staff/bookings">Xem Booking</Link></li>
+            <li><Link to="/manager/reports">Báo cáo doanh thu</Link></li>
+            <li><Link to="/manager/staffs">Quản lý nhân viên</Link></li>
+          </>
+        );
+
+      case "admin":
+        return (
+          <>
+            <li><Link to="/admin/dashboard">Dashboard</Link></li>
+            <li><Link to="/admin/users">Quản lý Tài khoản</Link></li>
+            <li><Link to="/admin/hotels">Quản lý Khách sạn</Link></li>
+          </>
+        );
+
+      default:
+        return null;
+    }
   };
 
   return (
     <header className="header">
-      <div className="header-left">
-        <img src={logo} alt="Logo" />
+      {/* Logo click về trang chủ hoặc trang quản lý tùy role */}
+      <div className="header-left" onClick={() => navigate(role === 'staff' || role === 'manager' || role === 'admin' ? `/${role}/dashboard` : '/')}>
+        <img src={logo} alt="Logo" style={{cursor: 'pointer'}} />
         <p>Hotels & Resorts</p>
       </div>
 
@@ -47,7 +106,12 @@ const Header = () => {
           <div className="inform">
             <img src={userImg} alt="User" />
             {token ? (
-              <p>{user ? `Xin chào, ${user.email}` : "Thành viên"}</p>
+              <div style={{display: 'flex', flexDirection: 'column', lineHeight: '1.2'}}>
+                 {/* ✅ Hiển thị TÊN CHÍNH XÁC: user.name */}
+                 <span>{user ? `Xin chào, ${user.name}` : "Thành viên"}</span>
+                 {/* Hiển thị Role nhỏ bên dưới */}
+                 <span style={{fontSize: '10px', color: '#888', textTransform: 'uppercase'}}>({role})</span>
+              </div>
             ) : (
               <Link
                 to="/auth/login"
@@ -66,36 +130,25 @@ const Header = () => {
 
         <div className="header-right-menu">
           <ul>
-            <li>Quần thể</li>
-            <li>Ưu đãi</li>
-            <li>Trải nghiệm</li>
-            <li>Liên hệ</li>
-            <li>Về chúng tôi</li>
+            {/* Gọi hàm render menu động ở đây */}
+            {renderNavLinks()}
 
-            {/* 👇 THÊM LINK LỊCH SỬ ĐẶT PHÒNG TẠI ĐÂY */}
-            {token && (
-              <li>
-                <Link
-                  to="/customer/booking-history"
-                  style={{ textDecoration: "none", color: "inherit" }}
-                >
-                  Lịch sử đặt phòng
-                </Link>
-              </li>
-            )}
-
+            {/* Nút Đăng xuất */}
             {token && (
               <li>
                 <button
                   onClick={handleLogout}
-                  style={{
+                  className="btn-logout" 
+                  // Comment style để dùng header.scss (theo yêu cầu của bạn)
+                  /* style={{
                     backgroundColor: "#c0392b",
                     color: "white",
                     border: "none",
                     padding: "5px 10px",
                     borderRadius: "6px",
                     cursor: "pointer",
-                  }}
+                    marginLeft: "10px"
+                  }} */
                 >
                   Đăng xuất
                 </button>

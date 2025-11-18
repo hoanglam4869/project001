@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom"; // Import Link nếu bạn có dùng
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -27,13 +28,14 @@ function Login() {
       // ✅ Giải mã payload JWT
       const payload = JSON.parse(atob(data.token.split(".")[1]));
 
-      // ✅ Lưu role & user info
+      // ✅ LƯU NAME, ROLE, USER ID VÀO LOCALSTORAGE
       localStorage.setItem("role", payload.role);
       localStorage.setItem(
         "user",
         JSON.stringify({
-          user_id: payload.user_id || payload.id, // tùy backend
-          email: payload.email,
+          user_id: payload.user_id, 
+          name: payload.name, // ✅ Đã thêm thuộc tính 'name'
+          email: payload.email, // LƯU Ý: email không có trong JWT payload ở authController.js của bạn, nhưng nếu có thì tốt
           role: payload.role,
         })
       );
@@ -47,7 +49,7 @@ function Login() {
           window.location.href = "/staff/bookings";
           break;
         case "manager":
-          window.location.href = "/manager/services";
+          window.location.href = "/manager/room-types";
           break;
         case "admin":
           window.location.href = "/admin/accounts";
@@ -87,6 +89,10 @@ function Login() {
           </button>
         </form>
         {error && <p style={{ color: "red" }}>{error}</p>}
+        {/* Thêm link Register nếu cần */}
+        <p style={{marginTop: '15px', textAlign: 'center'}}>
+           Chưa có tài khoản? <Link to="/auth/register">Đăng ký ngay</Link>
+        </p>
       </div>
     </>
   );

@@ -15,6 +15,8 @@ import BookingCreate from './pages/customer/bookingcreate.jsx';
 import BookingHistory from './pages/customer/bookinghistory.jsx';
 import BookingManagement from './pages/staff/bookingmanage.jsx';
 import BookingDetail from './pages/shared/bookingdetail.jsx';
+import VoucherManagement from './pages/staff/vouchermanage.jsx';
+import RoomTypeManagement from './pages/manager/roomtypemanage.jsx';
 
 function App() {
 
@@ -39,10 +41,15 @@ function App() {
         </Route>
 
         
-        {/* === CÁC ROUTE CỦA STAFF/ADMIN (BẮT BUỘC ĐĂNG NHẬP) === */}
-        <Route element={<AuthGuard allowedRoles={['staff', 'manager', 'admin']} />}>
+        {/* === CÁC ROUTE CỦA STAFF (BẮT BUỘC ĐĂNG NHẬP) === */}        
+        <Route element={<AuthGuard allowedRoles={['staff']} />}>
           <Route path="/staff/bookings" element={<BookingManagement />} />
-          {/* Thêm các route khác của Staff/Manager tại đây */}
+          <Route path="/staff/vouchers" element={<VoucherManagement />} />
+        </Route>
+
+        {/* === CÁC ROUTE CỦA ADMIN (BẮT BUỘC ĐĂNG NHẬP) === */}        
+        <Route element={<AuthGuard allowedRoles={['manager']} />}>
+          <Route path="/manager/room-types" element={<RoomTypeManagement />} />
         </Route>
 
         

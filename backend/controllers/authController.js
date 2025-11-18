@@ -43,6 +43,8 @@ exports.login = async (req, res) => {
     const token = jwt.sign(
       {
         user_id: user.user_id,
+        // ✅ THÊM NAME VÀO PAYLOAD JWT
+        name: user.name, 
         role: user.role,
         hotel_id: user.hotel_id
       },
