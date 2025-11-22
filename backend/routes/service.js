@@ -9,10 +9,12 @@ const {
 } = require("../controllers/serviceController");
 const { verifyToken, isManager } = require("../middlewares/auth");
 
-// CRUD service (chỉ manager)
-router.post("/", verifyToken, isManager, createService);
+// --- PUBLIC ROUTES (Ai cũng xem được, không cần đăng nhập) ---
 router.get("/", getServices);
 router.get("/:id", getServiceById);
+
+// --- PROTECTED ROUTES (Chỉ Manager mới được thao tác) ---
+router.post("/", verifyToken, isManager, createService);
 router.put("/:id", verifyToken, isManager, updateService);
 router.delete("/:id", verifyToken, isManager, deleteService);
 

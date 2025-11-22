@@ -37,6 +37,7 @@ function Login() {
           name: payload.name, // ✅ Đã thêm thuộc tính 'name'
           email: payload.email, // LƯU Ý: email không có trong JWT payload ở authController.js của bạn, nhưng nếu có thì tốt
           role: payload.role,
+          hotel_id: payload.hotel_id,
         })
       );
 

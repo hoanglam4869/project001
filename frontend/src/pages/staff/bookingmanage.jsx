@@ -92,14 +92,24 @@ const BookingManagement = () => {
     }
   };
 
+  // ✅ SỬA: Hàm render an toàn cho trang quản lý của Staff
   const renderBookingItems = (items) => {
      if (!items || items.length === 0) return <li>(Không có)</li>;
-     return items.map(item => (
-        <li key={item.booking_item_id}>
-           {item.RoomType ? `Phòng: ${item.RoomType.name}` : `Dịch vụ: ${item.Service.name}`}
-           (x{item.quantity})
-        </li>
-     ));
+     return items.map(item => {
+        let displayText = <span style={{color: 'red', fontStyle: 'italic'}}>Đã bị xóa</span>;
+        
+        if (item.RoomType) {
+            displayText = `Phòng: ${item.RoomType.name}`;
+        } else if (item.Service) {
+            displayText = `Dịch vụ: ${item.Service.name}`;
+        }
+
+        return (
+            <li key={item.booking_item_id}>
+               {displayText} (x{item.quantity})
+            </li>
+        );
+     });
   };
 
   if (loading) return <div><Header />Đang tải...</div>;

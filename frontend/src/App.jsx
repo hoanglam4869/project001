@@ -17,6 +17,12 @@ import BookingManagement from './pages/staff/bookingmanage.jsx';
 import BookingDetail from './pages/shared/bookingdetail.jsx';
 import VoucherManagement from './pages/staff/vouchermanage.jsx';
 import RoomTypeManagement from './pages/manager/roomtypemanage.jsx';
+import UserManagement from './pages/admin/usermanage.jsx';
+import HotelManagement from './pages/admin/hotelmanage.jsx';
+import UserDetail from './pages/admin/userdetail.jsx';
+import HotelDetail from './pages/admin/hoteldetail.jsx';
+import ServiceManagement from './pages/manager/servicemanage.jsx';
+import StaffDashboard from './pages/staff/dashboard.jsx';
 
 function App() {
 
@@ -45,17 +51,28 @@ function App() {
         <Route element={<AuthGuard allowedRoles={['staff']} />}>
           <Route path="/staff/bookings" element={<BookingManagement />} />
           <Route path="/staff/vouchers" element={<VoucherManagement />} />
+          <Route path="/staff/dashboard" element={<StaffDashboard />} />
         </Route>
 
-        {/* === CÁC ROUTE CỦA ADMIN (BẮT BUỘC ĐĂNG NHẬP) === */}        
+        {/* === CÁC ROUTE CỦA Manager (BẮT BUỘC ĐĂNG NHẬP) === */}        
         <Route element={<AuthGuard allowedRoles={['manager']} />}>
           <Route path="/manager/room-types" element={<RoomTypeManagement />} />
+          <Route path="/manager/services" element={<ServiceManagement />} />
+        </Route>
+
+        {/* === CÁC ROUTE CỦA Admin (BẮT BUỘC ĐĂNG NHẬP) === */}        
+        <Route element={<AuthGuard allowedRoles={['admin']} />}>
+          <Route path="/admin/accounts" element={<UserManagement />} />
+          <Route path="/admin/hotels" element={<HotelManagement />} />
+          <Route path="/admin/users/:id" element={<UserDetail />} />
+          <Route path="/admin/hotels/:id" element={<HotelDetail />} />
         </Route>
 
         
         {/* === ROUTE CHUNG (CHỈ CẦN ĐĂNG NHẬP, ROLE NÀO CŨNG ĐƯỢC) === */}
         <Route element={<AuthGuard />}>
           <Route path="/booking-detail/:id" element={<BookingDetail />} />
+
         </Route>
         
       </Routes>

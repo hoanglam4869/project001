@@ -67,10 +67,9 @@ const Header = () => {
 
       case "manager":
         return (
-          <>
-            <li><Link to="/staff/bookings">Xem Booking</Link></li>
-            <li><Link to="/manager/reports">Báo cáo doanh thu</Link></li>
-            <li><Link to="/manager/staffs">Quản lý nhân viên</Link></li>
+          <>            
+            <li><Link to="/manager/room-types">Room</Link></li>
+            <li><Link to="/manager/services">Quản lý service</Link></li>
           </>
         );
 
@@ -78,7 +77,7 @@ const Header = () => {
         return (
           <>
             <li><Link to="/admin/dashboard">Dashboard</Link></li>
-            <li><Link to="/admin/users">Quản lý Tài khoản</Link></li>
+            <li><Link to="/admin/accounts">Quản lý Tài khoản</Link></li>
             <li><Link to="/admin/hotels">Quản lý Khách sạn</Link></li>
           </>
         );

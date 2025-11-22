@@ -23,6 +23,26 @@ exports.getHotels = async (req, res) => {
   }
 };
 
+
+exports.getHotelById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Include User để xem danh sách nhân viên của khách sạn này
+    const hotel = await Hotel.findByPk(id, {
+      include: [{ 
+        model: User, 
+        attributes: ['user_id', 'name', 'email', 'role'] // Chỉ lấy thông tin cần thiết
+      }]
+    });
+
+    if (!hotel) return res.status(404).json({ msg: "Hotel not found" });
+    res.json(hotel);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
 // Cập nhật khách sạn
 exports.updateHotel = async (req, res) => {
   try {

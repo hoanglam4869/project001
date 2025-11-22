@@ -60,14 +60,23 @@ const BookingHistory = () => {
     fetchMyBookings();
   }, [navigate]);
 
+  // ✅ SỬA: Hàm render an toàn, không crash nếu Room/Service bị null
   const renderBookingItems = (items) => {
      if (!items || items.length === 0) return <li>Không có chi tiết</li>;
-     return items.map(item => (
-        <li key={item.booking_item_id}>
-           {item.RoomType ? `Phòng: ${item.RoomType.name}` : `Dịch vụ: ${item.Service.name}`}
-           (x{item.quantity})
-        </li>
-     ));
+     return items.map(item => {
+        let displayText = "Sản phẩm đã bị xóa";
+        if (item.RoomType) {
+            displayText = `Phòng: ${item.RoomType.name}`;
+        } else if (item.Service) {
+            displayText = `Dịch vụ: ${item.Service.name}`;
+        }
+
+        return (
+            <li key={item.booking_item_id}>
+               {displayText} (x{item.quantity})
+            </li>
+        );
+     });
   };
 
   const renderContent = () => {
@@ -113,7 +122,7 @@ const BookingHistory = () => {
               </td>
                <td>
                  <ul>
-                    {renderBookingItems(b.BookingItems)}
+                   {renderBookingItems(b.BookingItems)}
                  </ul>
               </td>
               <td>
