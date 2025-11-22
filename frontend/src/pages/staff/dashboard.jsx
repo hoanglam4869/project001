@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import API from "../../api/api.js";
+import React from "react";
 import Header from "../../components/header.jsx";
 import {
   BarChart,
@@ -11,39 +10,27 @@ import {
   ResponsiveContainer,
   Cell
 } from "recharts";
+import { useStaffDashboard } from "../../hooks/useDashboard"; // Import hook SWR
 
 const StaffDashboard = () => {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  // Sử dụng Hook để lấy dữ liệu realtime
+  const { data: stats, isLoading, isError } = useStaffDashboard();
 
-  // Load dữ liệu
-  useEffect(() => {
-    const fetchDashboard = async () => {
-      const token = localStorage.getItem("token");
-      try {
-        const res = await API.get("/api/dashboard/staff", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setStats(res.data);
-      } catch (err) {
-        setError(err.response?.data?.msg || "Lỗi tải Dashboard.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDashboard();
-  }, []);
-
-  if (loading) return <div><Header /><p style={{padding: 20}}>Đang tải dữ liệu...</p></div>;
-  if (error) return <div><Header /><p style={{padding: 20, color: 'red'}}>{error}</p></div>;
+  if (isLoading) return <div><Header /><p style={{padding: 20}}>Đang tải dữ liệu...</p></div>;
+  if (isError) return <div><Header /><p style={{padding: 20, color: 'red'}}>Lỗi kết nối máy chủ.</p></div>;
   if (!stats) return null;
 
   return (
     <>
       <Header />
       <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto", backgroundColor: "#f4f6f8", minHeight: "100vh" }}>
-        <h2 style={{ color: "#2c3e50", marginBottom: "20px" }}>Dashboard Vận Hành (Staff)</h2>
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: "20px"}}>
+            <h2 style={{ color: "#2c3e50", margin: 0 }}>Dashboard Vận Hành (Staff)</h2>
+            <span style={{fontSize: '12px', color: '#7f8c8d', display: 'flex', alignItems: 'center'}}>
+                <span style={{display: 'inline-block', width: '8px', height: '8px', backgroundColor: '#2ecc71', borderRadius: '50%', marginRight: '5px'}}></span>
+                Cập nhật tự động
+            </span>
+        </div>
 
         {/* --- PHẦN 1: THẺ TRẠNG THÁI VẬN HÀNH (Operations) --- */}
         <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>

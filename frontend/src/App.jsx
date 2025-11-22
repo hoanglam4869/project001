@@ -23,6 +23,7 @@ import UserDetail from './pages/admin/userdetail.jsx';
 import HotelDetail from './pages/admin/hoteldetail.jsx';
 import ServiceManagement from './pages/manager/servicemanage.jsx';
 import StaffDashboard from './pages/staff/dashboard.jsx';
+import ManagerDashboard from './pages/manager/dashboard.jsx';
 
 function App() {
 
@@ -58,6 +59,7 @@ function App() {
         <Route element={<AuthGuard allowedRoles={['manager']} />}>
           <Route path="/manager/room-types" element={<RoomTypeManagement />} />
           <Route path="/manager/services" element={<ServiceManagement />} />
+          <Route path="/manager/dashboard" element={<ManagerDashboard />} />
         </Route>
 
         {/* === CÁC ROUTE CỦA Admin (BẮT BUỘC ĐĂNG NHẬP) === */}        

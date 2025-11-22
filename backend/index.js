@@ -25,6 +25,7 @@ const bookingRoutes = require("./routes/booking");
 const bookingItemRoutes = require("./routes/bookingItem");
 const voucherRoutes = require("./routes/voucher");
 const staffDashBoardRoutes = require("./routes/staffdashboard");
+const managerDashBoardRoutes = require("./routes/managerdashboard");
 
 
 // Gắn routes
@@ -37,6 +38,7 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/bookingItems", bookingItemRoutes);
 app.use("/api/vouchers", voucherRoutes);
 app.use("/api/dashboard", staffDashBoardRoutes);
+app.use("/api/dashboard", managerDashBoardRoutes);
 
 
 // ✅ Webhook PayOS
