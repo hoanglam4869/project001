@@ -33,7 +33,7 @@ function Login() {
       localStorage.setItem(
         "user",
         JSON.stringify({
-          user_id: payload.user_id, 
+          user_id: payload.user_id,
           name: payload.name, // ✅ Đã thêm thuộc tính 'name'
           email: payload.email, // LƯU Ý: email không có trong JWT payload ở authController.js của bạn, nhưng nếu có thì tốt
           role: payload.role,
@@ -88,11 +88,14 @@ function Login() {
           <button type="submit" style={{ width: "100%" }}>
             Login
           </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+            <Link to="/auth/forgot-password" style={{ fontSize: '14px' }}>Quên mật khẩu?</Link>
+          </div>
         </form>
         {error && <p style={{ color: "red" }}>{error}</p>}
         {/* Thêm link Register nếu cần */}
-        <p style={{marginTop: '15px', textAlign: 'center'}}>
-           Chưa có tài khoản? <Link to="/auth/register">Đăng ký ngay</Link>
+        <p style={{ marginTop: '15px', textAlign: 'center' }}>
+          Chưa có tài khoản? <Link to="/auth/register">Đăng ký ngay</Link>
         </p>
       </div>
     </>

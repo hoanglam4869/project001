@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000", // backend của bạn
+  baseURL: "http://localhost:5173", // backend của bạn
 });
 
 // Gắn token vào header Authorization
